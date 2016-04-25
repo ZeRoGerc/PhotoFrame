@@ -10,6 +10,8 @@ import android.view.MenuItem;
 import android.view.View;
 
 public class FileListActivity extends AppCompatActivity {
+    private LoginFragment loginFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -17,6 +19,11 @@ public class FileListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         initFAB();
+
+        if (loginFragment == null) {
+            loginFragment = LoginFragment.newInstance();
+            loginFragment.show(getFragmentManager(), "login");
+        }
     }
 
     @Override
