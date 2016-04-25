@@ -16,7 +16,6 @@ public class FileListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_file_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         initFAB();
     }
 

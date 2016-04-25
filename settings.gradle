@@ -1,1 +1,1 @@
-include ':app'
+include ':app', ':yandex-disk-sdk-example', ':yandex-disk-sdk'
