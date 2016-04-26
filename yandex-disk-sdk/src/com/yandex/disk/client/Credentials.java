@@ -37,7 +37,7 @@ public class Credentials implements Parcelable {
 
     public void addAuthHeader(AbstractHttpMessage req) {
         req.addHeader("X-Yandex-SDK-Version", "android, 1.0");
-        req.addHeader("Authorization", "OAuth "+token);
+        req.addHeader("Authorization", "OAuth "+ token);
     }
 
     public static final Parcelable.Creator<Credentials> CREATOR = new Parcelable.Creator<Credentials>() {

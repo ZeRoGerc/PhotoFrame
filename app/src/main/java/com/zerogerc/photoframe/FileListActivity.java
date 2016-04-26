@@ -1,16 +1,40 @@
 package com.zerogerc.photoframe;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.yandex.disk.client.Credentials;
+import com.zerogerc.photoframe.adapter.BaseAdapter;
+import com.zerogerc.photoframe.login.LoginActivity;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class FileListActivity extends AppCompatActivity {
-    private LoginFragment loginFragment;
+    private static final String LOG_TAG = "MAIN";
+
+    private static final int LOGIN_CODE = 1;
+
+    public static final String USER_ID = "12c6774f2763474591d36590bb7b252b";
+
+    private static final String ROOT = "/";
+
+    private static String accessToken;
+
+    private BaseAdapter adapter;
+
+    private List<HierarchyEntity> files;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,12 +42,12 @@ public class FileListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_file_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        initFAB();
 
-        if (loginFragment == null) {
-            loginFragment = LoginFragment.newInstance();
-            loginFragment.show(getFragmentManager(), "login");
-        }
+        initFAB();
+        initRecyclerView();
+
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivityForResult(intent, LOGIN_CODE);
     }
 
     @Override
@@ -52,8 +76,17 @@ public class FileListActivity extends AppCompatActivity {
      * Initialize recycler view of MainActivity
      */
     private void initRecyclerView() {
+        files = new ArrayList<>();
 
+        RecyclerView recyclerView = ((RecyclerView) findViewById(R.id.file_list_recycler_view));
+        if (recyclerView != null) {
+            recyclerView.setHasFixedSize(true);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            adapter = new BaseAdapter(this, files);
+            recyclerView.setAdapter(adapter);
+        }
     }
+
 
     /**
      * Initialize floating action button of MainActivity and set proper listeners.
@@ -68,6 +101,30 @@ public class FileListActivity extends AppCompatActivity {
                             .setAction("Action", null).show();
                 }
             });
+        }
+    }
+
+    private void startLoading() {
+        Credentials credentials = new Credentials(USER_ID, accessToken);
+        FilesLoader loader = new FilesLoader(this, credentials) {
+            @Override
+            protected void onProgressUpdate(HierarchyEntity... values) {
+                adapter.append(values[0]);
+            }
+        };
+        loader.execute(ROOT);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case LOGIN_CODE:
+                if (resultCode == RESULT_OK) {
+                    accessToken = data.getStringExtra(LoginActivity.ACCESS_TOKEN_KEY);
+                    startLoading();
+                } else {
+                    Log.e(LOG_TAG, "Error while retrieving access token");
+                }
         }
     }
 }
