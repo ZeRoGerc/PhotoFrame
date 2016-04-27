@@ -1,54 +1,85 @@
 package com.zerogerc.photoframe;
 
+import android.support.v4.content.AsyncTaskLoader;
 import android.content.Context;
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.util.Log;
 
 import com.yandex.disk.client.Credentials;
 import com.yandex.disk.client.ListItem;
 import com.yandex.disk.client.ListParsingHandler;
 import com.yandex.disk.client.TransportClient;
+import com.yandex.disk.client.exceptions.CancelledPropfindException;
 import com.yandex.disk.client.exceptions.WebdavException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Class for loading all files from given Directory. All entities received one by one in {@link #onProgressUpdate(Object[])}
- * You should pass directory to {@link #doInBackground(String...)}
- */
-public class FilesLoader extends AsyncTask<String, HierarchyEntity, Boolean> {
-    private Credentials credentials;
-    private Context context;
+public class FilesLoader extends AsyncTaskLoader<List<ListItem>> {
+    private static final String LOG_TAG = "FilesLoader";
 
-    /**
-     * Credentials used for loading files.
-     * @param context current context
-     * @param credentials given credentials
-     */
-    public FilesLoader(Context context, Credentials credentials) {
-        this.context = context;
+    private final Credentials credentials;
+    private final String dir;
+    private final Handler handler;
+
+    private List<ListItem> fileList;
+
+    private static final int ITEMS_PER_REQUEST = 20;
+
+    public FilesLoader(Context context, Credentials credentials, String dir) {
+        super(context);
         this.credentials = credentials;
+        this.dir = dir;
+        this.handler = new Handler();
     }
 
     @Override
-    protected Boolean doInBackground(String... params) {
-        try {
-            final TransportClient client = TransportClient.getInstance(context, credentials);
-            client.getList(params[0], new ParsingHandler());
-        } catch (IOException e1) {
-            e1.printStackTrace();
-            return false;
-        } catch (WebdavException e2) {
-            e2.printStackTrace();
-            return false;
-        }
-        return true;
+    protected void onStartLoading() {
+        forceLoad();
     }
 
-    private class ParsingHandler extends ListParsingHandler {
-        @Override
-        public boolean handleItem(ListItem item) {
-            publishProgress(new HierarchyEntity(item));
-            return true;
+    @Override
+    public List<ListItem> loadInBackground() {
+        fileList = new ArrayList<>();
+        TransportClient client = null;
+        try {
+            client = TransportClient.getInstance(getContext(), credentials);
+            client.getList(dir, ITEMS_PER_REQUEST, new ListParsingHandler() {
+                // First item in PROPFIND is the current collection name
+                boolean ignoreFirstItem = true;
+
+                @Override
+                public void onPageFinished(int itemsOnPage) {
+                    ignoreFirstItem = true;
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            deliverResult(fileList);
+                        }
+                    });
+                    super.onPageFinished(itemsOnPage);
+                }
+
+                @Override
+                public boolean handleItem(ListItem item) {
+                    if (ignoreFirstItem) {
+                        ignoreFirstItem = false;
+                        return false;
+                    } else {
+                        fileList.add(item);
+                        return true;
+                    }
+                }
+            });
+        } catch (CancelledPropfindException canceledException) {
+            return fileList;
+        } catch (WebdavException | IOException e) {
+            Log.e(LOG_TAG, "Load Exception");
+            //TODO: proper handler
+        } finally {
+            TransportClient.shutdown(client);
         }
+        return fileList;
     }
 }

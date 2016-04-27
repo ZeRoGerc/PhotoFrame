@@ -5,19 +5,16 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.yandex.disk.client.Credentials;
+import com.yandex.disk.client.ListItem;
 import com.zerogerc.photoframe.adapter.BaseAdapter;
 import com.zerogerc.photoframe.login.LoginActivity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class FileListActivity extends AppCompatActivity {
@@ -27,27 +24,40 @@ public class FileListActivity extends AppCompatActivity {
 
     public static final String USER_ID = "12c6774f2763474591d36590bb7b252b";
 
+    public static final String FRAGMENT_TAG = "list_fragment";
+
     private static final String ROOT = "/";
 
-    private static String accessToken;
+    public static String accessToken;
 
     private BaseAdapter adapter;
 
-    private List<HierarchyEntity> files;
+    private List<ListItem> files;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+//        if (getIntent() != null && getIntent().getData() != null) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivityForResult(intent, LOGIN_CODE);
+//        }
+
         setContentView(R.layout.activity_file_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         initFAB();
-        initRecyclerView();
+//        initRecyclerView();
+//        if (savedInstanceState == null) {
+//            startLoading();
+//        }
+    }
 
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivityForResult(intent, LOGIN_CODE);
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -76,15 +86,15 @@ public class FileListActivity extends AppCompatActivity {
      * Initialize recycler view of MainActivity
      */
     private void initRecyclerView() {
-        files = new ArrayList<>();
-
-        RecyclerView recyclerView = ((RecyclerView) findViewById(R.id.file_list_recycler_view));
-        if (recyclerView != null) {
-            recyclerView.setHasFixedSize(true);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-            adapter = new BaseAdapter(this, files);
-            recyclerView.setAdapter(adapter);
-        }
+//        files = new ArrayList<>();
+//
+//        RecyclerView recyclerView = ((RecyclerView) findViewById(R.id.file_list_recycler_view));
+//        if (recyclerView != null) {
+//            recyclerView.setHasFixedSize(true);
+//            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+//            adapter = new BaseAdapter(this, files);
+//            recyclerView.setAdapter(adapter);
+//        }
     }
 
 
@@ -105,14 +115,9 @@ public class FileListActivity extends AppCompatActivity {
     }
 
     private void startLoading() {
-        Credentials credentials = new Credentials(USER_ID, accessToken);
-        FilesLoader loader = new FilesLoader(this, credentials) {
-            @Override
-            protected void onProgressUpdate(HierarchyEntity... values) {
-                adapter.append(values[0]);
-            }
-        };
-        loader.execute(ROOT);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new FileListFragment(), FRAGMENT_TAG)
+                .commitAllowingStateLoss();
     }
 
     @Override

@@ -6,9 +6,8 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_file_list" tools:context=".FileListActivity">
 
-    <android.support.v7.widget.RecyclerView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/file_list_recycler_view">
-    </android.support.v7.widget.RecyclerView>
+        android:id="@+id/fragment_container"/>
 </RelativeLayout>

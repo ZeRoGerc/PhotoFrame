@@ -5,28 +5,28 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.zerogerc.photoframe.HierarchyEntity;
+import com.yandex.disk.client.ListItem;
 import com.zerogerc.photoframe.R;
 
 /**
  * Base holder for Adapter
  */
-public class EntityViewHolder extends RecyclerView.ViewHolder {
+public class ItemViewHolder extends RecyclerView.ViewHolder {
     private TextView title;
 
-    public EntityViewHolder(ViewGroup parent) {
+    public ItemViewHolder(ViewGroup parent) {
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_hierarchy_entity, parent, false));
 
         title = ((TextView) itemView.findViewById(R.id.hierarchy_entity_title));
     }
 
     /**
-     * Load all info from {@link HierarchyEntity} to layout
-     * @param item {@link HierarchyEntity} to load on layout
+     * Load all info from {@link ListItem} to layout
+     * @param item {@link ListItem} to load on layout
      */
-    public void refresh(HierarchyEntity item) {
+    public void refresh(ListItem item) {
         if (title != null) {
-            title.setText(item.getTitle());
+            title.setText(item.getDisplayName());
         }
     }
 }

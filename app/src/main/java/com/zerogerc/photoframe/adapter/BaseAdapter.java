@@ -4,29 +4,29 @@ import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
-import com.zerogerc.photoframe.HierarchyEntity;
+import com.yandex.disk.client.ListItem;
 
 import java.util.List;
 
 /**
  * Base adapter for showing files in the RecyclerView
  */
-public class BaseAdapter extends RecyclerView.Adapter<EntityViewHolder> {
-    protected List<HierarchyEntity> list;
+public class BaseAdapter extends RecyclerView.Adapter<ItemViewHolder> {
+    protected List<ListItem> list;
     protected Activity activity;
 
-    public BaseAdapter(Activity activity, List<HierarchyEntity> list) {
+    public BaseAdapter(Activity activity, List<ListItem> list) {
         this.list = list;
         this.activity = activity;
     }
 
     @Override
-    public EntityViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new EntityViewHolder(parent);
+    public ItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        return new ItemViewHolder(parent);
     }
 
     @Override
-    public void onBindViewHolder(EntityViewHolder holder, int position) {
+    public void onBindViewHolder(ItemViewHolder holder, int position) {
         holder.refresh(list.get(position));
     }
 
@@ -40,7 +40,7 @@ public class BaseAdapter extends RecyclerView.Adapter<EntityViewHolder> {
      * Changes will be shown on UI.
      * @param entity given entity
      */
-    public void append(HierarchyEntity entity) {
+    public void append(ListItem entity) {
         list.add(entity);
         notifyItemInserted(list.size() - 1);
     }
