@@ -1,5 +1,6 @@
 package com.zerogerc.photoframe;
 
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -8,6 +9,9 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -22,8 +26,8 @@ import java.util.List;
 /**
  * Created by ZeRoGerc on 27/04/16.
  */
-public class FileListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<List<com.yandex.disk.client.ListItem>> {
-    private static final String TAG = "ListExampleFragment";
+public class FileListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<List<ListItem>> {
+    private static final String TAG = "FileListFragment";
 
     private static final String CURRENT_DIR_KEY = "example.current.dir";
 
@@ -42,9 +46,9 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        setHasOptionsMenu(true);
+        setEmptyText("No files");
 
-        registerForContextMenu(getListView());
+        setHasOptionsMenu(true);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
@@ -57,8 +61,12 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         if (currentDir == null) {
             currentDir = ROOT;
         }
-//        getActivity().getActionBar().setDisplayHomeAsUpEnabled(!ROOT.equals(currentDir));
 
+        ActionBar bar = getActivity().getActionBar();
+        if (bar != null) {
+            bar.setDisplayHomeAsUpEnabled(!ROOT.equals(currentDir));
+            bar.setTitle(currentDir);
+        }
         adapter = new ListExampleAdapter(getActivity());
         setListAdapter(adapter);
         setListShown(false);
@@ -72,6 +80,23 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     @Override
     public Loader<List<ListItem>> onCreateLoader(int id, Bundle args) {
         return new FilesLoader(getActivity(), credentials, currentDir);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        inflater.inflate(R.menu.menu_file_list, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                getFragmentManager().popBackStack();
+                break;
+        }
+        return true;
     }
 
     @Override
@@ -109,7 +134,7 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         fragment.setArguments(args);
 
         getFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, fragment, FileListActivity.FRAGMENT_TAG)
+                .replace(android.R.id.content, fragment, FileListActivity.FRAGMENT_TAG)
                 .addToBackStack(null)
                 .commit();
     }

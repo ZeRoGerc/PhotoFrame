@@ -8,7 +8,7 @@ import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.zerogerc.photoframe.FileListActivity;
+import com.zerogerc.photoframe.FileListFragment;
 import com.zerogerc.photoframe.R;
 
 /**
@@ -21,7 +21,7 @@ public class LoginActivity extends Activity {
 
     private static final String AUTH_LINK = "https://oauth.yandex.ru/authorize?" +
             "response_type=token" +
-            "&client_id=" + FileListActivity.USER_ID;
+            "&client_id=" + FileListFragment.USER_ID;
 
     private static String ACCESS_TOKEN = "access_token=";
     private static String ERROR = "error=";
