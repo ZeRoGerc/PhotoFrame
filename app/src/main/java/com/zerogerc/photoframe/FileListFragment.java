@@ -2,6 +2,7 @@ package com.zerogerc.photoframe;
 
 import android.app.ActionBar;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -46,7 +47,7 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        setEmptyText("No files");
+        setEmptyText(getString(R.string.no_files));
 
         setHasOptionsMenu(true);
 
@@ -123,6 +124,11 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         ListItem item = ((ListItem) getListAdapter().getItem(position));
         if (item.isCollection()) {
             changeDir(item.getFullPath());
+        } else {
+            Intent intent = new Intent(getContext(), TestActivity.class);
+            intent.putExtra(TestActivity.CREDENTIALS_KEY, credentials);
+            intent.putExtra(TestActivity.ITEM_KEY, item);
+            startActivity(intent);
         }
     }
 

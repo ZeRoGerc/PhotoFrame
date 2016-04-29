@@ -5,12 +5,12 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0-rc1'
+        classpath 'com.android.tools.build:gradle:2.1.0'
     }
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:19.0.1'
+    compile 'com.android.support:support-v4:23.3.0'
     compile project (':yandex-disk-sdk')
 }
 
