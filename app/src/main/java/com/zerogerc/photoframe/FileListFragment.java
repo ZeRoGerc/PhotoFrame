@@ -2,10 +2,10 @@ package com.zerogerc.photoframe;
 
 import android.app.ActionBar;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.yandex.disk.client.Credentials;
 import com.yandex.disk.client.ListItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,10 +39,14 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
 
     private static final String ROOT = "/";
 
+    private static final String CONTENT_IMAGE = "image";
+
     private Credentials credentials;
     private String currentDir;
 
     private ListExampleAdapter adapter;
+    private ArrayList<ListItem> images;
+    private ArrayList<Integer> numberOfImage;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -111,6 +116,16 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
             //TODO: show message on the empty screen
         } else {
             adapter.setData(data);
+            images = new ArrayList<>();
+            numberOfImage = new ArrayList<>();
+            for (ListItem item : data) {
+                if ((!item.isCollection()) && item.getContentType().contains(CONTENT_IMAGE)) {
+                    numberOfImage.add(images.size());
+                    images.add(item);
+                } else {
+                    numberOfImage.add(0);
+                }
+            }
         }
     }
 
@@ -125,11 +140,17 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         if (item.isCollection()) {
             changeDir(item.getFullPath());
         } else {
-            Intent intent = new Intent(getContext(), TestActivity.class);
-            intent.putExtra(TestActivity.CREDENTIALS_KEY, credentials);
-            intent.putExtra(TestActivity.ITEM_KEY, item);
-            startActivity(intent);
+            if (item.getContentType().contains("image")) {
+                replaceContent(PreviewFragment.newInstance(images, credentials, numberOfImage.get(position)));
+            }
         }
+    }
+
+    private void replaceContent(final Fragment fragment) {
+        getFragmentManager().beginTransaction()
+                .replace(android.R.id.content, fragment, FileListActivity.FRAGMENT_TAG)
+                .addToBackStack(null)
+                .commit();
     }
 
     private void changeDir(final String dir) {

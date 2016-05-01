@@ -3,4 +3,6 @@
     <string name="action_settings">Settings</string>
 
     <string name="no_files">No files</string>
+
+    <string name="pager_title">%1$d of %2$d</string>
 </resources>
