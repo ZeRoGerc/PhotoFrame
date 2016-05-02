@@ -4,12 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black"
-    android:id="@+id/slideshow_root"
     tools:context="com.zerogerc.photoframe.SlideshowActivity">
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/slideshow_fragment_container">
+        android:id="@+id/activity_slideshow_fragment_container">
     </FrameLayout>
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/activity_slideshow_progress"
+        android:visibility="visible"
+        android:layout_gravity="center" />
 </FrameLayout>

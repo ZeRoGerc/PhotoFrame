@@ -18,10 +18,13 @@ import java.util.concurrent.Executors;
 
 public class ThreadPoolImageLoader {
     public static final String BROADCAST_IMAGE_LOADED = "image_loaded";
+    public static final String BROADCAST_LOAD_FINISHED = "load_finished";
     public static final String IMAGE_KEY = "image";
 
     private ExecutorService threadPool;
     private Handler handler;
+    private int remainImages = 0;
+
     private static ThreadPoolImageLoader mInstance;
 
     static {
@@ -33,7 +36,6 @@ public class ThreadPoolImageLoader {
     }
 
     private ThreadPoolImageLoader() {
-//        threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         handler = new Handler(Looper.getMainLooper());
     }
 
@@ -43,10 +45,12 @@ public class ThreadPoolImageLoader {
     public void startLoad(final Credentials credentials, final List<ListItem> items) {
         //Create new instance of threadPool because threadPool is not reusable.
         threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        remainImages = 0;
 
         for (final ListItem item : items) {
             if (item.getContentType().contains("image")) {
-                threadPool.execute(new Runnable() {
+                remainImages++;
+                threadPool.submit(new Runnable() {
                     @Override
                     public void run() {
                         TransportClient client = null;
@@ -64,6 +68,14 @@ public class ThreadPoolImageLoader {
                             ex.printStackTrace();
                         } finally {
                             TransportClient.shutdown(client);
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (--remainImages == 0) {
+                                        sendFinishBroadcast();
+                                    }
+                                }
+                            });
                         }
                     }
                 });
@@ -79,6 +91,12 @@ public class ThreadPoolImageLoader {
         Intent intent = new Intent(BROADCAST_IMAGE_LOADED);
         intent.putExtra(IMAGE_KEY, image);
         LocalBroadcastManager.getInstance(PhotoFrameApp.getContext()).sendBroadcast(intent);
+    }
+
+    private void sendFinishBroadcast() {
+        Intent intent = new Intent(BROADCAST_LOAD_FINISHED);
+        LocalBroadcastManager.getInstance(PhotoFrameApp.getContext()).sendBroadcast(intent);
+
     }
 
     /**
