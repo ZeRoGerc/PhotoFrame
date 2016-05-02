@@ -1,4 +1,4 @@
-package com.zerogerc.photoframe;
+package com.zerogerc.photoframe.util;
 
 import com.yandex.disk.client.DownloadListener;
 

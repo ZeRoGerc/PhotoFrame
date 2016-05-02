@@ -1,4 +1,4 @@
-package com.zerogerc.photoframe;
+package com.zerogerc.photoframe.util;
 
 import android.support.v4.content.AsyncTaskLoader;
 import android.content.Context;
@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class that loads all files as {@link ListItem} from given directory.
+ */
 public class FilesLoader extends AsyncTaskLoader<List<ListItem>> {
     private static final String LOG_TAG = "FilesLoader";
 

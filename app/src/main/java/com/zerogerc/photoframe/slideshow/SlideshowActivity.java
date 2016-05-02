@@ -1,4 +1,4 @@
-package com.zerogerc.photoframe;
+package com.zerogerc.photoframe.slideshow;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,6 +15,7 @@ import android.widget.ProgressBar;
 
 import com.yandex.disk.client.Credentials;
 import com.yandex.disk.client.ListItem;
+import com.zerogerc.photoframe.R;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

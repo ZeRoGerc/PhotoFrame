@@ -1,4 +1,4 @@
-package com.zerogerc.photoframe;
+package com.zerogerc.photoframe.preview;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -17,6 +17,8 @@ import com.yandex.disk.client.Credentials;
 import com.yandex.disk.client.ListItem;
 import com.yandex.disk.client.TransportClient;
 import com.yandex.disk.client.exceptions.WebdavException;
+import com.zerogerc.photoframe.util.ByteDownloader;
+import com.zerogerc.photoframe.R;
 
 import java.io.IOException;
 

@@ -1,4 +1,4 @@
-package com.zerogerc.photoframe;
+package com.zerogerc.photoframe.preview;
 
 import android.app.ActionBar;
 import android.content.res.Resources;
@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 
 import com.yandex.disk.client.Credentials;
 import com.yandex.disk.client.ListItem;
+import com.zerogerc.photoframe.R;
 
 import java.util.ArrayList;
 

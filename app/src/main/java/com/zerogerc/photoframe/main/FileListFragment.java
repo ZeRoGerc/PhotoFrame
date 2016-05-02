@@ -1,4 +1,4 @@
-package com.zerogerc.photoframe;
+package com.zerogerc.photoframe.main;
 
 import android.app.ActionBar;
 import android.content.Context;
@@ -22,6 +22,10 @@ import android.widget.TextView;
 
 import com.yandex.disk.client.Credentials;
 import com.yandex.disk.client.ListItem;
+import com.zerogerc.photoframe.R;
+import com.zerogerc.photoframe.preview.PreviewFragment;
+import com.zerogerc.photoframe.slideshow.SlideshowActivity;
+import com.zerogerc.photoframe.util.FilesLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,10 +35,9 @@ import java.util.List;
  */
 public class FileListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<List<ListItem>> {
     private static final String TAG = "FileListFragment";
+    private static final String CREDENTIALS_KEY = "credentials";
 
     private static final String CURRENT_DIR_KEY = "example.current.dir";
-
-    public static final String USER_ID = "12c6774f2763474591d36590bb7b252b";
 
     private static final int GET_FILE_TO_UPLOAD = 100;
 
@@ -49,6 +52,16 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     private ArrayList<ListItem> images;
     private ArrayList<Integer> numberOfImage;
 
+    public static FileListFragment newInstance(final Credentials credentials) {
+
+        Bundle args = new Bundle();
+
+        args.putParcelable(CREDENTIALS_KEY, credentials);
+        FileListFragment fragment = new FileListFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -59,7 +72,7 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        credentials = new Credentials(USER_ID, FileListActivity.accessToken);
+        credentials = getArguments().getParcelable(CREDENTIALS_KEY);
 
         Bundle args = getArguments();
         if (args != null) {

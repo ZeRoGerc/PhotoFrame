@@ -8,27 +8,29 @@ import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.zerogerc.photoframe.FileListFragment;
 import com.zerogerc.photoframe.R;
+import com.zerogerc.photoframe.main.PhotoFrameApp;
+
+import java.util.Calendar;
 
 /**
  * Activity for initial authorization of user and gaining access token.
  */
 public class LoginActivity extends Activity {
     public static final String ACCESS_TOKEN_KEY = "access_token";
+    public static final String EXPIRE_TIME_KEY = "expire";
 
     private static String LOG_TAG = "LOG_FRAG";
 
     private static final String AUTH_LINK = "https://oauth.yandex.ru/authorize?" +
             "response_type=token" +
-            "&client_id=" + FileListFragment.USER_ID;
+            "&client_id=" + PhotoFrameApp.USER_ID;
 
-    private static String ACCESS_TOKEN = "access_token=";
-    private static String ERROR = "error=";
+    private static final String ACCESS_TOKEN = "access_token=";
+    private static final String EXPIRES_IN = "expires_in=";
+    private static final String ERROR = "error=";
 
     private WebView webView;
-
-    private String accessToken = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,18 +57,13 @@ public class LoginActivity extends Activity {
         }
     }
 
-    /**
-     * Parse access token from given url
-     * @param url given url
-     * @return access token
-     */
-    private String getAccessToken(final String url) {
-        int left = url.indexOf(ACCESS_TOKEN);
+    private String getString(final String url, final String match) {
+        int left = url.indexOf(match);
         if (left == -1) {
-            Log.e(LOG_TAG, "Given url doesn't contain \"access token=\"");
+            Log.e(LOG_TAG, "Given url doesn't contain " + match);
             return null;
         } else {
-            left += ACCESS_TOKEN.length();
+            left += match.length();
             int right = left;
             while (right < url.length() && url.charAt(right) != '&') {
                 right++;
@@ -75,9 +72,12 @@ public class LoginActivity extends Activity {
         }
     }
 
-    private void finishWithResult(final String accessToken) {
+    private void finishWithResult(final String accessToken, final long expiresIn) {
         Intent result = new Intent();
         result.putExtra(ACCESS_TOKEN_KEY, accessToken);
+        Calendar calendar = Calendar.getInstance();
+        long seconds = calendar.get(Calendar.SECOND);
+        result.putExtra(EXPIRE_TIME_KEY, seconds + expiresIn);
         setResult(RESULT_OK, result);
         finish();
     }
@@ -95,10 +95,11 @@ public class LoginActivity extends Activity {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             Log.d(LOG_TAG, url);
             if (url.contains(ACCESS_TOKEN)) {
-                accessToken = getAccessToken(url);
-                Log.d(LOG_TAG, accessToken);
+                String accessToken = getString(url, ACCESS_TOKEN);
+                String expire = getString(url, EXPIRES_IN);
+
                 destroyWebView();
-                finishWithResult(accessToken);
+                finishWithResult(accessToken, Long.parseLong(expire));
             } else if (url.contains(ERROR)) {
                 destroyWebView();
                 finishWithError();
