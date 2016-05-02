@@ -14,16 +14,13 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.yandex.disk.client.Credentials;
-import com.yandex.disk.client.DownloadListener;
 import com.yandex.disk.client.ListItem;
 import com.yandex.disk.client.TransportClient;
 import com.yandex.disk.client.exceptions.WebdavException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
-public class ImageFragment extends Fragment implements LoaderCallbacks<ImageFragment.ByteDownloader>{
+public class ImageFragment extends Fragment implements LoaderCallbacks<ByteDownloader>{
     public static final String ITEM_KEY = "item";
     public static final String CREDENTIALS_KEY = "credentials";
 
@@ -45,7 +42,7 @@ public class ImageFragment extends Fragment implements LoaderCallbacks<ImageFrag
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.activity_test, container, false);
+        return inflater.inflate(R.layout.content_image_fragment, container, false);
     }
 
     @Override
@@ -81,20 +78,6 @@ public class ImageFragment extends Fragment implements LoaderCallbacks<ImageFrag
     @Override
     public void onLoaderReset(Loader<ByteDownloader> loader) {
         item = null;
-    }
-
-    protected static class ByteDownloader extends DownloadListener {
-        private ByteArrayOutputStream stream;
-
-        @Override
-        public OutputStream getOutputStream(boolean append) throws IOException {
-            stream = new ByteArrayOutputStream();
-            return stream;
-        }
-
-        public byte[] getData() {
-            return stream.toByteArray();
-        }
     }
 
     private static class AsyncImageLoader extends AsyncTaskLoader<ByteDownloader> {

@@ -2,6 +2,7 @@ package com.zerogerc.photoframe;
 
 import android.app.ActionBar;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -100,6 +101,12 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         switch (item.getItemId()) {
             case android.R.id.home:
                 getFragmentManager().popBackStack();
+                break;
+            case R.id.action_settings:
+                Intent intent = new Intent(getContext(), SlideshowActivity.class);
+                intent.putExtra(SlideshowActivity.ITEMS_KEY, images);
+                intent.putExtra(SlideshowActivity.CREDENTIALS_KEY, credentials);
+                startActivity(intent);
                 break;
         }
         return true;
