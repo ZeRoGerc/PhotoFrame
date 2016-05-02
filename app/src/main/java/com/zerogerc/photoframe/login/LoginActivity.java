@@ -75,8 +75,8 @@ public class LoginActivity extends Activity {
     private void finishWithResult(final String accessToken, final long expiresIn) {
         Intent result = new Intent();
         result.putExtra(ACCESS_TOKEN_KEY, accessToken);
-        Calendar calendar = Calendar.getInstance();
-        long seconds = calendar.get(Calendar.SECOND);
+        long seconds = Calendar.getInstance().getTimeInMillis() / 1000;
+
         result.putExtra(EXPIRE_TIME_KEY, seconds + expiresIn);
         setResult(RESULT_OK, result);
         finish();

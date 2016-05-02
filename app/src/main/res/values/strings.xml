@@ -5,4 +5,6 @@
     <string name="no_files">No files</string>
 
     <string name="pager_title">%1$d of %2$d</string>
+
+    <string name="initial_label">Checking login status...</string>
 </resources>

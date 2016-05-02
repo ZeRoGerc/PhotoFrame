@@ -3,9 +3,7 @@ package com.zerogerc.photoframe.main;
 import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
@@ -37,11 +35,9 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     private static final String TAG = "FileListFragment";
     private static final String CREDENTIALS_KEY = "credentials";
 
-    private static final String CURRENT_DIR_KEY = "example.current.dir";
+    private static final String CURRENT_DIR_KEY = "current_directory";
 
-    private static final int GET_FILE_TO_UPLOAD = 100;
-
-    private static final String ROOT = "/";
+    public static final String ROOT = "/";
 
     private static final String CONTENT_IMAGE = "image";
 
@@ -52,11 +48,13 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     private ArrayList<ListItem> images;
     private ArrayList<Integer> numberOfImage;
 
-    public static FileListFragment newInstance(final Credentials credentials) {
+    public static FileListFragment newInstance(final Credentials credentials, final String currentDir) {
 
         Bundle args = new Bundle();
 
         args.putParcelable(CREDENTIALS_KEY, credentials);
+        args.putString(CURRENT_DIR_KEY ,currentDir);
+
         FileListFragment fragment = new FileListFragment();
         fragment.setArguments(args);
         return fragment;
@@ -69,8 +67,6 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         setEmptyText(getString(R.string.no_files));
 
         setHasOptionsMenu(true);
-
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         credentials = getArguments().getParcelable(CREDENTIALS_KEY);
 
@@ -174,16 +170,8 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     }
 
     private void changeDir(final String dir) {
-        Bundle args = new Bundle();
-        args.putString(CURRENT_DIR_KEY, dir);
-
-        FileListFragment fragment = new FileListFragment();
-        fragment.setArguments(args);
-
-        getFragmentManager().beginTransaction()
-                .replace(android.R.id.content, fragment, FileListActivity.FRAGMENT_TAG)
-                .addToBackStack(null)
-                .commit();
+        FileListFragment fragment = FileListFragment.newInstance(credentials, dir);
+        replaceContent(fragment);
     }
 
     public static class ListExampleAdapter extends ArrayAdapter<ListItem> {

@@ -24,12 +24,11 @@ public class FileListActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent = new Intent(this, LoginActivity.class);
-
         SharedPreferences prefs = getSharedPreferences(PhotoFrameApp.SHARED_NAME, MODE_PRIVATE);
-
         long valid = prefs.getLong(PhotoFrameApp.SHARED_PREF_EXPIRE, 0);
-        if (Calendar.getInstance().get(Calendar.SECOND) > valid) {
+
+        if (Calendar.getInstance().getTimeInMillis() / 1000 > valid) {
+            Intent intent = new Intent(this, LoginActivity.class);
             startActivityForResult(intent, LOGIN_CODE);
         } else {
             credentials = new Credentials(PhotoFrameApp.USER_ID, prefs.getString(PhotoFrameApp.SHARED_PREF_TOKEN, null));
@@ -39,7 +38,7 @@ public class FileListActivity extends FragmentActivity {
 
     private void startLoading() {
         getSupportFragmentManager().beginTransaction()
-                .replace(android.R.id.content, FileListFragment.newInstance(credentials), FRAGMENT_TAG)
+                .replace(android.R.id.content, FileListFragment.newInstance(credentials, FileListFragment.ROOT), FRAGMENT_TAG)
                 .commitAllowingStateLoss();
     }
 
