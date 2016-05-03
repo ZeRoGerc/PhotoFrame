@@ -112,6 +112,7 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
                 getFragmentManager().popBackStack();
                 break;
             case R.id.action_settings:
+                //TODO; check if folder has images
                 Intent intent = new Intent(getContext(), SlideshowActivity.class);
                 intent.putExtra(SlideshowActivity.ITEMS_KEY, images);
                 intent.putExtra(SlideshowActivity.CREDENTIALS_KEY, credentials);

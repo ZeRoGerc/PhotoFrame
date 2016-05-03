@@ -32,7 +32,7 @@ public class SlideshowActivity extends AppCompatActivity {
     private static final String CURRENT_STEP_KEY = "step";
 
     private static final int checkPeriod = 1000;
-    private static final int checksNumber = 5;
+    private static final int checksNumber = 10;
     private int currentCheckStep = 0;
 
     private Handler handler;
@@ -147,8 +147,12 @@ public class SlideshowActivity extends AppCompatActivity {
     }
 
     private void checkIfExistsAndPost() {
-        if (loadedImages.size() > 0 && (++currentCheckStep > checksNumber)) {
-            currentCheckStep = 0;
+        if (++currentCheckStep < checksNumber) return;
+        currentCheckStep = 0;
+
+        if (loadedImages.size() > 1) {
+            replaceContent(SlideshowDoubleImageFragment.newInstance(loadedImages.poll(), loadedImages.poll()));
+        } else {
             replaceContent(SlideshowSingleImageFragment.newInstance(loadedImages.poll()));
         }
     }
