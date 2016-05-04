@@ -5,15 +5,14 @@
     android:weightSum="2">
 
     <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        style="@style/SlideshowImage.Crop"
+        android:layout_width="0dp"
         android:id="@+id/slideshow_double_image_first"
-        android:layout_weight="1"
-        android:layout_marginRight="4dp"/>
+        android:layout_weight="1"/>
 
     <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        style="@style/SlideshowImage.Crop"
+        android:layout_width="0dp"
         android:id="@+id/slideshow_double_image_second"
         android:layout_weight="1"/>
 

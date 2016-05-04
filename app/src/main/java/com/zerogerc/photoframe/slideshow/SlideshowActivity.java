@@ -32,7 +32,7 @@ public class SlideshowActivity extends AppCompatActivity {
     private static final String CURRENT_STEP_KEY = "step";
 
     private static final int checkPeriod = 1000;
-    private static final int checksNumber = 10;
+    private static final int checksNumber = 5;
     private int currentCheckStep = 0;
 
     private Handler handler;
@@ -48,7 +48,11 @@ public class SlideshowActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
                 case ThreadPoolImageLoader.BROADCAST_IMAGE_LOADED:
-                    firstImageAppeared = true;
+                    //force first image to appear after it's loaded
+                    if (!firstImageAppeared) {
+                        firstImageAppeared = true;
+                        currentCheckStep = checksNumber + 1;
+                    }
                     loadedImages.add(intent.getByteArrayExtra(ThreadPoolImageLoader.IMAGE_KEY));
                     progressBar.setVisibility(View.GONE);
                     break;
@@ -74,8 +78,7 @@ public class SlideshowActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             loadedImages = new LinkedList<>();
-            ThreadPoolImageLoader loader = ThreadPoolImageLoader.getInstance();
-            loader.startLoad(credentials, items);
+            ThreadPoolImageLoader.getInstance().startLoad(credentials, items);
         } else {
             firstImageAppeared = savedInstanceState.getBoolean(HAS_APPEARED_KEY);
             hasFinishedLoad = savedInstanceState.getBoolean(HAS_FINISHED_LOAD_KEY);
@@ -142,6 +145,8 @@ public class SlideshowActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         timer.cancel();
+
+        ThreadPoolImageLoader.getInstance().shutdown();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mImageReceiver);
         super.onDestroy();
     }
@@ -150,10 +155,15 @@ public class SlideshowActivity extends AppCompatActivity {
         if (++currentCheckStep < checksNumber) return;
         currentCheckStep = 0;
 
-        if (loadedImages.size() > 1) {
+        if (loadedImages.size() > 2) {
+            replaceContent(SlideshowTripleImageFragment.newInstance(loadedImages.poll(), loadedImages.poll(), loadedImages.poll()));
+        } else if (loadedImages.size() > 1) {
             replaceContent(SlideshowDoubleImageFragment.newInstance(loadedImages.poll(), loadedImages.poll()));
         } else {
-            replaceContent(SlideshowSingleImageFragment.newInstance(loadedImages.poll()));
+            if (loadedImages.size() > 0) {
+                loadedImages.poll();
+                replaceContent(SlideshowSingleImageFragment.newInstance(loadedImages.poll()));
+            }
         }
     }
 

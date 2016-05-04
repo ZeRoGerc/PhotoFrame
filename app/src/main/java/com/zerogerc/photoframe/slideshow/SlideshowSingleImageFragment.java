@@ -17,6 +17,8 @@ import com.zerogerc.photoframe.R;
 public class SlideshowSingleImageFragment extends Fragment {
     public static final String IMAGE_KEY = "image_key";
 
+    private ImageView imageView;
+
     public static SlideshowSingleImageFragment newInstance(byte[] image) {
 
         Bundle args = new Bundle();
@@ -37,12 +39,18 @@ public class SlideshowSingleImageFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ImageView imageView = ((ImageView) view.findViewById(R.id.slideshow_single_image));
+        imageView = ((ImageView) view.findViewById(R.id.slideshow_single_image));
 
         Bundle bundle = getArguments();
         if (bundle != null) {
             //Just load our data on single available imageView
             Glide.with(this).load(bundle.getByteArray(IMAGE_KEY)).into(imageView);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        imageView.setImageBitmap(null);
     }
 }
