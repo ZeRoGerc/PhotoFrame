@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -18,8 +17,6 @@ import com.yandex.disk.client.ListItem;
 import com.zerogerc.photoframe.R;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -30,19 +27,24 @@ public class SlideshowActivity extends AppCompatActivity {
     private static final String HAS_APPEARED_KEY = "appeared";
     private static final String HAS_FINISHED_LOAD_KEY = "finished";
     private static final String CURRENT_STEP_KEY = "step";
+    private static final String IMAGES_KEY = "images";
 
     private static final int checkPeriod = 1000;
     private static final int checksNumber = 5;
+
     private int currentCheckStep = 0;
-
     private Handler handler;
-
     private boolean firstImageAppeared = false;
     private ProgressBar progressBar;
 
     private Timer timer;
     private boolean hasFinishedLoad = false;
-    private Queue<byte[]> loadedImages;
+    private ArrayList<Image> loadedImages;
+
+    private SlideshowImageFragment singleImageFragment;
+    private SlideshowImageFragment doubleImageFragment;
+    private SlideshowImageFragment tripleImageFragment;
+
     private BroadcastReceiver mImageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -53,11 +55,10 @@ public class SlideshowActivity extends AppCompatActivity {
                         firstImageAppeared = true;
                         currentCheckStep = checksNumber + 1;
                     }
-                    loadedImages.add(intent.getByteArrayExtra(ThreadPoolImageLoader.IMAGE_KEY));
+                    loadedImages.add(new Image(intent.getByteArrayExtra(ThreadPoolImageLoader.IMAGE_KEY)));
                     progressBar.setVisibility(View.GONE);
                     break;
                 case ThreadPoolImageLoader.BROADCAST_LOAD_FINISHED:
-                    Log.d("LOAD", "FINISHED");
                     hasFinishedLoad = true;
                     finishWithDelayIfEmptyAndFinished();
                     break;
@@ -76,17 +77,18 @@ public class SlideshowActivity extends AppCompatActivity {
         ArrayList<ListItem> items = getIntent().getParcelableArrayListExtra(ITEMS_KEY);
         Credentials credentials = getIntent().getParcelableExtra(CREDENTIALS_KEY);
 
+        singleImageFragment = SlideshowImageFragment.newInstance(SlideshowImageFragment.SINGLE);
+        doubleImageFragment = SlideshowImageFragment.newInstance(SlideshowImageFragment.DOUBLE);
+        tripleImageFragment = SlideshowImageFragment.newInstance(SlideshowImageFragment.TRIPLE);
+
         if (savedInstanceState == null) {
-            loadedImages = new LinkedList<>();
+            loadedImages = new ArrayList<>();
             ThreadPoolImageLoader.getInstance().startLoad(credentials, items);
         } else {
             firstImageAppeared = savedInstanceState.getBoolean(HAS_APPEARED_KEY);
             hasFinishedLoad = savedInstanceState.getBoolean(HAS_FINISHED_LOAD_KEY);
             currentCheckStep = savedInstanceState.getInt(CURRENT_STEP_KEY);
-
-            if (getLastCustomNonConfigurationInstance() != null) {
-                loadedImages = ((Queue<byte[]>) getLastCustomNonConfigurationInstance());
-            }
+            loadedImages = savedInstanceState.getParcelableArrayList(IMAGES_KEY);
         }
 
         if (firstImageAppeared) {
@@ -122,7 +124,22 @@ public class SlideshowActivity extends AppCompatActivity {
         outState.putBoolean(HAS_APPEARED_KEY, firstImageAppeared);
         outState.putBoolean(HAS_FINISHED_LOAD_KEY, hasFinishedLoad);
         outState.putInt(CURRENT_STEP_KEY, currentCheckStep);
+        outState.putParcelableArrayList(IMAGES_KEY, loadedImages);
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onBackPressed() {
+        ThreadPoolImageLoader.getInstance().shutdown();
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void onDestroy() {
+        timer.cancel();
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mImageReceiver);
+        super.onDestroy();
     }
 
     private void startShow() {
@@ -142,28 +159,31 @@ public class SlideshowActivity extends AppCompatActivity {
         }, 0, checkPeriod);
     }
 
-    @Override
-    protected void onDestroy() {
-        timer.cancel();
-
-        ThreadPoolImageLoader.getInstance().shutdown();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mImageReceiver);
-        super.onDestroy();
-    }
-
     private void checkIfExistsAndPost() {
         if (++currentCheckStep < checksNumber) return;
         currentCheckStep = 0;
 
+        int amount = 0;
+        SlideshowImageFragment fragment = null;
         if (loadedImages.size() > 2) {
-            replaceContent(SlideshowTripleImageFragment.newInstance(loadedImages.poll(), loadedImages.poll(), loadedImages.poll()));
+            fragment = tripleImageFragment;
+            amount = 3;
         } else if (loadedImages.size() > 1) {
-            replaceContent(SlideshowDoubleImageFragment.newInstance(loadedImages.poll(), loadedImages.poll()));
-        } else {
-            if (loadedImages.size() > 0) {
-                loadedImages.poll();
-                replaceContent(SlideshowSingleImageFragment.newInstance(loadedImages.poll()));
+            fragment = doubleImageFragment;
+            amount = 2;
+        } else if (loadedImages.size() > 0) {
+            fragment = singleImageFragment;
+            amount = 1;
+        }
+
+        if (fragment != null) {
+            Image[] images = new Image[amount];
+            loadedImages.subList(0, amount).toArray(images);
+            fragment.prepareImages(images);
+            for (int i = 0; i < amount; i++) {
+                loadedImages.remove(0);
             }
+            replaceContent(fragment);
         }
     }
 
@@ -178,6 +198,7 @@ public class SlideshowActivity extends AppCompatActivity {
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    ThreadPoolImageLoader.getInstance().shutdown();
                     finish();
                 }
             }, checkPeriod * checksNumber);

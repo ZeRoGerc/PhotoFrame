@@ -4,13 +4,14 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.yandex.disk.client.Credentials;
 import com.yandex.disk.client.ListItem;
 import com.yandex.disk.client.TransportClient;
 import com.yandex.disk.client.exceptions.WebdavException;
-import com.zerogerc.photoframe.util.ByteDownloader;
 import com.zerogerc.photoframe.main.PhotoFrameApp;
+import com.zerogerc.photoframe.util.ByteDownloader;
 
 import java.io.IOException;
 import java.util.List;
@@ -73,6 +74,7 @@ public class ThreadPoolImageLoader {
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
+                                    Log.e("REMAIN", Integer.toString(remainImages));
                                     if (--remainImages == 0) {
                                         sendFinishBroadcast();
                                     }
@@ -96,9 +98,15 @@ public class ThreadPoolImageLoader {
     }
 
     private void sendFinishBroadcast() {
-        Intent intent = new Intent(BROADCAST_LOAD_FINISHED);
+        Log.e("FINISH", "SENDED");
+        final Intent intent = new Intent(BROADCAST_LOAD_FINISHED);
         LocalBroadcastManager.getInstance(PhotoFrameApp.getContext()).sendBroadcast(intent);
-
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                LocalBroadcastManager.getInstance(PhotoFrameApp.getContext()).sendBroadcast(intent);
+            }
+        }, 3000);
     }
 
     /**
