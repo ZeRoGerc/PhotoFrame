@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.bumptech.glide.Glide;
 import com.yandex.disk.client.Credentials;
@@ -29,6 +30,8 @@ public class ImageFragment extends Fragment implements LoaderCallbacks<ByteDownl
     private ListItem item;
     private Credentials credentials;
     private ImageView image;
+
+    private ProgressBar progressBar;
 
     public static ImageFragment newInstance(ListItem image, Credentials credentials) {
 
@@ -57,7 +60,8 @@ public class ImageFragment extends Fragment implements LoaderCallbacks<ByteDownl
             credentials = bundle.getParcelable(CREDENTIALS_KEY);
         }
 
-        image = ((ImageView) view.findViewById(R.id.test_image));
+        image = ((ImageView) view.findViewById(R.id.preview_fragment_image));
+        progressBar = ((ProgressBar) view.findViewById(R.id.preview_fragment_progress));
 
         getLoaderManager().initLoader(0, null, this);
     }
@@ -69,6 +73,7 @@ public class ImageFragment extends Fragment implements LoaderCallbacks<ByteDownl
 
     @Override
     public void onLoadFinished(Loader<ByteDownloader> loader, ByteDownloader data) {
+        progressBar.setVisibility(View.GONE);
         if (data != null) {
             //load image in the screen
             Glide.with(this).load(data.getData()).into(image);

@@ -38,10 +38,12 @@ public class SlideshowImageFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+
     public SlideshowImageFragment() {
         imageViews = new ArrayList<>();
         images = new ArrayList<>();
     }
+
 
     @Nullable
     @Override

@@ -3,15 +3,17 @@ package com.zerogerc.photoframe.main;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
 import com.yandex.disk.client.Credentials;
+import com.zerogerc.photoframe.R;
 import com.zerogerc.photoframe.login.LoginActivity;
 
 import java.util.Calendar;
 
-public class FileListActivity extends FragmentActivity {
+public class FileListActivity extends AppCompatActivity {
     private static final String LOG_TAG = "MAIN";
 
     private static final int LOGIN_CODE = 1;
@@ -20,9 +22,16 @@ public class FileListActivity extends FragmentActivity {
 
     private Credentials credentials;
 
+//    private FileListFragment fileListFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_file_list);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         SharedPreferences prefs = getSharedPreferences(PhotoFrameApp.SHARED_NAME, MODE_PRIVATE);
         long valid = prefs.getLong(PhotoFrameApp.SHARED_PREF_EXPIRE, 0);
@@ -37,8 +46,9 @@ public class FileListActivity extends FragmentActivity {
     }
 
     private void startLoading() {
+//        fileListFragment = FileListFragment.newInstance(credentials, FileListFragment.ROOT);
         getSupportFragmentManager().beginTransaction()
-                .replace(android.R.id.content, FileListFragment.newInstance(credentials, FileListFragment.ROOT), FRAGMENT_TAG)
+                .replace(R.id.file_list_fragment_container, FileListFragment.newInstance(credentials, FileListFragment.ROOT), FRAGMENT_TAG)
                 .commitAllowingStateLoss();
     }
 

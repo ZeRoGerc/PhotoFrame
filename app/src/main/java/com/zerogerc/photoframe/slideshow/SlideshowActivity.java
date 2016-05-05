@@ -45,6 +45,13 @@ public class SlideshowActivity extends AppCompatActivity {
     private SlideshowImageFragment doubleImageFragment;
     private SlideshowImageFragment tripleImageFragment;
 
+    public static Intent getIntentForStart(Context context, ArrayList<ListItem> items, Credentials credentials) {
+        Intent intent = new Intent(context, SlideshowActivity.class);
+        intent.putExtra(ITEMS_KEY, items);
+        intent.putExtra(CREDENTIALS_KEY, credentials);
+        return intent;
+    }
+
     private BroadcastReceiver mImageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -104,20 +111,6 @@ public class SlideshowActivity extends AppCompatActivity {
             startShow();
         }
     }
-
-    @Override
-    public Object onRetainCustomNonConfigurationInstance() {
-        if (loadedImages != null) {
-            return loadedImages;
-        }
-        return super.onRetainCustomNonConfigurationInstance();
-    }
-
-    @Override
-    public Object getLastCustomNonConfigurationInstance() {
-        return super.getLastCustomNonConfigurationInstance();
-    }
-
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {

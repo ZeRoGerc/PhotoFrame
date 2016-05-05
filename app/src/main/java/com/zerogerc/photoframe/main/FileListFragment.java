@@ -1,13 +1,14 @@
 package com.zerogerc.photoframe.main;
 
-import android.app.ActionBar;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,13 +16,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.yandex.disk.client.Credentials;
 import com.yandex.disk.client.ListItem;
 import com.zerogerc.photoframe.R;
-import com.zerogerc.photoframe.preview.PreviewFragment;
+import com.zerogerc.photoframe.preview.PreviewActivity;
 import com.zerogerc.photoframe.slideshow.SlideshowActivity;
 import com.zerogerc.photoframe.util.FilesLoader;
 
@@ -44,7 +46,7 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     private Credentials credentials;
     private String currentDir;
 
-    private ListExampleAdapter adapter;
+    private ListAdapter adapter;
     private ArrayList<ListItem> images;
     private ArrayList<Integer> numberOfImage;
 
@@ -64,9 +66,9 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        setEmptyText(getString(R.string.no_files));
-
         setHasOptionsMenu(true);
+
+        setEmptyText(getString(R.string.no_files));
 
         credentials = getArguments().getParcelable(CREDENTIALS_KEY);
 
@@ -78,15 +80,17 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
             currentDir = ROOT;
         }
 
-        ActionBar bar = getActivity().getActionBar();
+        ActionBar bar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (bar != null) {
             bar.setDisplayHomeAsUpEnabled(!ROOT.equals(currentDir));
             bar.setTitle(currentDir);
         }
-        adapter = new ListExampleAdapter(getActivity());
+        adapter = new ListAdapter(getActivity());
         setListAdapter(adapter);
         setListShown(false);
         getLoaderManager().initLoader(0, null, this);
+
+        setFABListener();
     }
 
     public void restartLoader() {
@@ -100,9 +104,9 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-
+        menu.clear();
         inflater.inflate(R.menu.menu_file_list, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -112,11 +116,6 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
                 getFragmentManager().popBackStack();
                 break;
             case R.id.action_settings:
-                //TODO; check if folder has images
-                Intent intent = new Intent(getContext(), SlideshowActivity.class);
-                intent.putExtra(SlideshowActivity.ITEMS_KEY, images);
-                intent.putExtra(SlideshowActivity.CREDENTIALS_KEY, credentials);
-                startActivity(intent);
                 break;
         }
         return true;
@@ -158,14 +157,15 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
             changeDir(item.getFullPath());
         } else {
             if (item.getContentType().contains("image")) {
-                replaceContent(PreviewFragment.newInstance(images, credentials, numberOfImage.get(position)));
+                startActivity(PreviewActivity.getIntentForStart(getContext(), images, credentials, numberOfImage.get(position)));
+//                replaceContent(PreviewFragment.newInstance(images, credentials, numberOfImage.get(position)));
             }
         }
     }
 
     private void replaceContent(final Fragment fragment) {
         getFragmentManager().beginTransaction()
-                .replace(android.R.id.content, fragment, FileListActivity.FRAGMENT_TAG)
+                .replace(R.id.file_list_fragment_container, fragment, FileListActivity.FRAGMENT_TAG)
                 .addToBackStack(null)
                 .commit();
     }
@@ -175,10 +175,25 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         replaceContent(fragment);
     }
 
-    public static class ListExampleAdapter extends ArrayAdapter<ListItem> {
+    private void setFABListener() {
+        FloatingActionButton fab = ((FloatingActionButton) getActivity().findViewById(R.id.fab));
+        if (fab != null) {
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (images != null && images.size() > 0) {
+                        startActivity(SlideshowActivity.getIntentForStart(getActivity(), images, credentials));
+                    }
+                }
+            });
+        }
+
+    }
+
+    public static class ListAdapter extends ArrayAdapter<ListItem> {
         private final LayoutInflater inflater;
 
-        public ListExampleAdapter(Context context) {
+        public ListAdapter(Context context) {
             super(context, android.R.layout.simple_list_item_2);
             inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
@@ -195,7 +210,7 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
             View view;
 
             if (convertView == null) {
-                view = inflater.inflate(R.layout.layout_hierarchy_entity, parent, false);
+                view = inflater.inflate(R.layout.list_item, parent, false);
             } else {
                 view = convertView;
             }
@@ -212,9 +227,21 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
          * @param item given entity
          */
         private void loadContent(View view, ListItem item) {
-            TextView title = ((TextView) view.findViewById(R.id.hierarchy_entity_title));
+            TextView title = ((TextView) view.findViewById(R.id.list_item_title));
             if (title != null) {
                 title.setText(item.getDisplayName());
+            }
+            ImageView icon = ((ImageView) view.findViewById(R.id.list_item_icon));
+            if (icon != null) {
+                if (item.isCollection()) {
+                    icon.setImageResource(R.drawable.ic_folder_black_48dp);
+                } else {
+                    if (item.getContentType().contains("image")) {
+                        icon.setImageResource(R.drawable.ic_photo_black_48dp);
+                    } else {
+                        icon.setImageResource(R.drawable.ic_insert_drive_file_black_48dp);
+                    }
+                }
             }
         }
     }

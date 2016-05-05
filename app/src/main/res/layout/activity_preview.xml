@@ -3,18 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".preview.ImageFragment">
+    tools:context="com.zerogerc.photoframe.preview.PreviewActivity"
+    android:background="@color/dark_background"
+    android:fitsSystemWindows="false">
 
-    <ProgressBar
+    <android.support.v4.view.ViewPager
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/preview_fragment_progress"
-        android:layout_gravity="center"/>
-
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/preview_fragment_image"/>
-
+        android:id="@+id/preview_activity_pager"
+        android:fitsSystemWindows="false">
+    </android.support.v4.view.ViewPager>
 
 </FrameLayout>

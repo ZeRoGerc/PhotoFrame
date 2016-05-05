@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">@color/yandex_yellow</color>
+    <color name="colorPrimaryDark">@color/yandex_yellow</color>
+    <color name="colorAccent">@color/yandex_red</color>
+
+    <color name="primaryText">#212121</color>
+    <color name="secondaryText">#727272</color>
+    <color name="dividerColor">#B6B6B6</color>
+
+    <color name="black_alpha_40">#66000000</color>
+    <color name="dark_background">#1a1a1a</color>
+
+    <color name="black">#000</color>
+    <color name="white">#fff</color>
+
+    <color name="yandex_yellow">#ffcc00</color>
+    <color name="yandex_red">#ff0000</color>
+    <color name="yandex_gray_dark">#808285</color>
+    <color name="yandex_gray_light">#e6e6e6</color>
+    <color name="yandex_blue">#4981d7</color>
 </resources>
