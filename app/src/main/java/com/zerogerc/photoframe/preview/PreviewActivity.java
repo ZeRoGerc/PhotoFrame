@@ -70,6 +70,7 @@ public class PreviewActivity extends AppCompatActivity {
 
             changeTitle(initial);
             pager.setCurrentItem(initial);
+            pager.setOffscreenPageLimit(3);
         }
     }
 

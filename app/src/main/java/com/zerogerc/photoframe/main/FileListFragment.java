@@ -36,8 +36,8 @@ import java.util.List;
 public class FileListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<List<ListItem>> {
     private static final String TAG = "FileListFragment";
     private static final String CREDENTIALS_KEY = "credentials";
-
-    private static final String CURRENT_DIR_KEY = "current_directory";
+    private static final String CURRENT_DIR_KEY = "directory";
+    private static final String CURRENT_TITLE_KEY = "title";
 
     public static final String ROOT = "/";
 
@@ -50,12 +50,13 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     private ArrayList<ListItem> images;
     private ArrayList<Integer> numberOfImage;
 
-    public static FileListFragment newInstance(final Credentials credentials, final String currentDir) {
+    public static FileListFragment newInstance(final Credentials credentials, final String currentDir, final String currentTitle) {
 
         Bundle args = new Bundle();
 
         args.putParcelable(CREDENTIALS_KEY, credentials);
         args.putString(CURRENT_DIR_KEY ,currentDir);
+        args.putString(CURRENT_TITLE_KEY, currentTitle);
 
         FileListFragment fragment = new FileListFragment();
         fragment.setArguments(args);
@@ -73,8 +74,10 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         credentials = getArguments().getParcelable(CREDENTIALS_KEY);
 
         Bundle args = getArguments();
+        String title = getResources().getString(R.string.disk);
         if (args != null) {
             currentDir = args.getString(CURRENT_DIR_KEY);
+            title = args.getString(CURRENT_TITLE_KEY);
         }
         if (currentDir == null) {
             currentDir = ROOT;
@@ -83,7 +86,7 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         ActionBar bar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (bar != null) {
             bar.setDisplayHomeAsUpEnabled(!ROOT.equals(currentDir));
-            bar.setTitle(currentDir);
+            bar.setTitle(title);
         }
         adapter = new ListAdapter(getActivity());
         setListAdapter(adapter);
@@ -114,8 +117,6 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         switch (item.getItemId()) {
             case android.R.id.home:
                 getFragmentManager().popBackStack();
-                break;
-            case R.id.action_settings:
                 break;
         }
         return true;
@@ -154,7 +155,7 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     public void onListItemClick(ListView l, View v, int position, long id) {
         ListItem item = ((ListItem) getListAdapter().getItem(position));
         if (item.isCollection()) {
-            changeDir(item.getFullPath());
+            changeDir(item);
         } else {
             if (item.getContentType().contains("image")) {
                 startActivity(PreviewActivity.getIntentForStart(getContext(), images, credentials, numberOfImage.get(position)));
@@ -170,8 +171,8 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
                 .commit();
     }
 
-    private void changeDir(final String dir) {
-        FileListFragment fragment = FileListFragment.newInstance(credentials, dir);
+    private void changeDir(final ListItem item) {
+        FileListFragment fragment = FileListFragment.newInstance(credentials, item.getFullPath(), item.getDisplayName());
         replaceContent(fragment);
     }
 

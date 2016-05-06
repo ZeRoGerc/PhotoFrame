@@ -18,8 +18,8 @@ import com.yandex.disk.client.Credentials;
 import com.yandex.disk.client.ListItem;
 import com.yandex.disk.client.TransportClient;
 import com.yandex.disk.client.exceptions.WebdavException;
-import com.zerogerc.photoframe.util.ByteDownloader;
 import com.zerogerc.photoframe.R;
+import com.zerogerc.photoframe.util.ByteDownloader;
 
 import java.io.IOException;
 

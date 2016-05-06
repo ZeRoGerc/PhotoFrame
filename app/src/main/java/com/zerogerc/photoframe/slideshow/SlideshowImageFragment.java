@@ -1,7 +1,9 @@
 package com.zerogerc.photoframe.slideshow;
 
 
+import android.animation.ObjectAnimator;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -10,7 +12,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.ViewPropertyAnimation;
 import com.zerogerc.photoframe.R;
+import com.zerogerc.photoframe.main.PhotoFrameApp;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +33,8 @@ public class SlideshowImageFragment extends Fragment {
     private List<ImageView> imageViews;
     private ArrayList<Image> images;
 
+    private Handler handler;
+
     public static SlideshowImageFragment newInstance(int type) {
 
         Bundle args = new Bundle();
@@ -42,6 +48,7 @@ public class SlideshowImageFragment extends Fragment {
     public SlideshowImageFragment() {
         imageViews = new ArrayList<>();
         images = new ArrayList<>();
+        handler = new Handler();
     }
 
 
@@ -65,8 +72,15 @@ public class SlideshowImageFragment extends Fragment {
         }
 
         if (images != null) {
+            int delay = 200;
             for (int i = 0; i < images.size(); i++) {
-                Glide.with(this).load(images.get(i).getData()).into(imageViews.get(i));
+                final int copy = i;
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Glide.with(PhotoFrameApp.getContext()).load(images.get(copy).getData()).animate(animationObject).into(imageViews.get(copy));
+                    }
+                }, i * delay);
             }
         }
     }
@@ -103,4 +117,26 @@ public class SlideshowImageFragment extends Fragment {
                 return R.layout.slideshow_triple_image;
         }
     }
+
+
+    private static ViewPropertyAnimation.Animator animationObject = new ViewPropertyAnimation.Animator() {
+        @Override
+        public void animate(View view) {
+            // if it's a custom view class, cast it here
+            // then find subviews and do the animations
+            // here, we just use the entire view for the fade animation
+            view.setAlpha(0f);
+
+            ObjectAnimator fadeAnim = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f );
+            ObjectAnimator scaleX = ObjectAnimator.ofFloat(view, "scaleX", 0.8f, 1f);
+            ObjectAnimator scaleY = ObjectAnimator.ofFloat(view, "scaleY", 0.8f, 1f);
+            fadeAnim.setDuration(500);
+            scaleX.setDuration(100);
+            scaleY.setDuration(100);
+
+            fadeAnim.start();
+            scaleX.start();
+            scaleY.start();
+        }
+    };
 }
