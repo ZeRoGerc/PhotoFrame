@@ -9,13 +9,13 @@
         android:layout_height="wrap_content"
         android:id="@+id/list_item_icon"
         android:src="@drawable/ic_insert_drive_file_black_48dp"
-        android:tint="@color/yandex_blue"/>
+        android:tint="@color/colorAdditional"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/list_item_title"
-        android:textColor="@color/primaryText"
+        android:textColor="@color/colorPrimaryText"
         android:layout_gravity="center_vertical"/>
 
 </LinearLayout>

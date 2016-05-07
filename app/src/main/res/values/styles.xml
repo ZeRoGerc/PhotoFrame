@@ -47,8 +47,7 @@
     <style name="PreviewTheme" parent="@style/AppTheme" >
         <item name="android:actionBarStyle">@style/ThemeActionBar</item>
         <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:statusBarColor">#66000000</item>
+        <item name="android:statusBarColor">@color/black_alpha_40</item>
         <!-- Support library compatibility -->
         <item name="actionBarStyle">@style/ThemeActionBar</item>
         <item name="windowActionBarOverlay">true</item>

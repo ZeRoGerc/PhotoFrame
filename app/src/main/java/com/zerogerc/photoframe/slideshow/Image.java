@@ -4,11 +4,18 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Created by ZeRoGerc on 05/05/16.
+ * Parcelable class for storing loaded image as byte array.
  */
 public class Image implements Parcelable {
+    /**
+     * Byte representation of image.
+     */
     private byte[] data;
 
+    /**
+     * Create instance of {@link Image} with proper data.
+     * @param data byte representation of image.
+     */
     public Image(byte[] data) {
         this.data = data;
     }
@@ -18,6 +25,9 @@ public class Image implements Parcelable {
         source.readByteArray(data);
     }
 
+    /**
+     * @return byte representation of image.
+     */
     public byte[] getData() {
         return data;
     }
