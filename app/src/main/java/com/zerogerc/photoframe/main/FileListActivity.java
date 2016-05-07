@@ -14,14 +14,22 @@ import com.zerogerc.photoframe.login.LoginActivity;
 
 import java.util.Calendar;
 
+/**
+ * This in MainActivity of application. It checks the validity of <code>OAuth</code> token, starts
+ * {@link LoginActivity} if needed. After that load {@link FileListFragment}.
+ */
 public class FileListActivity extends AppCompatActivity {
     private static final String LOG_TAG = "MAIN";
 
+    /**
+     * Code for getting the result of {@link LoginActivity}.
+     */
     private static final int LOGIN_CODE = 1;
 
+    /**
+     * Credentials for loading data from yandex disk.
+     */
     private Credentials credentials;
-
-//    private FileListFragment fileListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,10 +43,13 @@ public class FileListActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences(PhotoFrameApp.SHARED_NAME, MODE_PRIVATE);
         long valid = prefs.getLong(PhotoFrameApp.SHARED_PREF_EXPIRE, 0);
 
+        // Check validity of OAuth token
         if (Calendar.getInstance().getTimeInMillis() / 1000 > valid) {
+            //If not valid start LoginActivity
             Intent intent = new Intent(this, LoginActivity.class);
             startActivityForResult(intent, LOGIN_CODE);
         } else {
+            //If valid create credentials and load FileListFragment
             credentials = new Credentials(PhotoFrameApp.USER_ID, prefs.getString(PhotoFrameApp.SHARED_PREF_TOKEN, null));
 
             if (savedInstanceState == null) {
@@ -47,8 +58,10 @@ public class FileListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Load {@link FileListFragment} on the content of this Activity.
+     */
     private void startLoading() {
-//        fileListFragment = FileListFragment.newInstance(credentials, FileListFragment.ROOT);
         getSupportFragmentManager().beginTransaction()
                 .replace(
                         R.id.file_list_fragment_container,
@@ -82,6 +95,7 @@ public class FileListActivity extends AppCompatActivity {
                     prefs.apply();
 
                     credentials = new Credentials(PhotoFrameApp.USER_ID, accessToken);
+                    //start FileListFragment with proper Credentials
                     startLoading();
                 } else {
                     Log.e(LOG_TAG, "Error while retrieving access token");

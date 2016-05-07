@@ -30,30 +30,67 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by ZeRoGerc on 27/04/16.
+ * Fragment that shows list of files with proper listeners.
  */
 public class FileListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<List<ListItem>> {
     private static final String TAG = "FileListFragment";
+
+    /*
+    Keys for passing data through Intent
+     */
     private static final String CREDENTIALS_KEY = "credentials";
     private static final String CURRENT_DIR_KEY = "directory";
     private static final String CURRENT_TITLE_KEY = "title";
-
     private static final String FILES_KEY = "files";
 
+    /**
+     * Root directory of disk.
+     */
     public static final String ROOT = "/";
 
+    /**
+     * MIME type of image.
+     */
     private static final String CONTENT_IMAGE = "image";
 
+    /**
+     * Credentials for loading data from yandex disk.
+     */
     private Credentials credentials;
+
+    /**
+     * Directory of displaying list of files.
+     */
     private String currentDir;
 
+    /**
+     * Adapter for list.
+     */
     private ListAdapter adapter;
+
+    /**
+     * List of all files from {@link #currentDir}.
+     */
     private ArrayList<ListItem> fileList;
+
+    /**
+     * List of all images from {@link #currentDir}.
+     */
     private ArrayList<ListItem> images;
+
+    /**
+     * List that contains number of items form {@link #fileList} in {@link #images}.
+     */
     private ArrayList<Integer> numberOfImage;
 
+    /**
+     * Create nes Instance of {@link FileListFragment}.
+     * @param credentials credentials for loading data from yandex disk
+     * @param currentDir directory of displaying list of files
+     * @param currentTitle title of {@link ActionBar} to show
+     * @return new instance of {@link FileListFragment}
+     */
     public static FileListFragment newInstance(final Credentials credentials, final String currentDir, final String currentTitle) {
-
         Bundle args = new Bundle();
 
         args.putParcelable(CREDENTIALS_KEY, credentials);
@@ -97,17 +134,14 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
             getLoaderManager().initLoader(0, null, this);
         } else {
             fileList = savedInstanceState.getParcelableArrayList(FILES_KEY);
-            initFromFileList();
             if (fileList == null) {
                 getLoaderManager().initLoader(0, null, this);
+            } else {
+                initFromFileList();
             }
         }
 
         setFABListener();
-    }
-
-    public void restartLoader() {
-        getLoaderManager().restartLoader(0, null, this);
     }
 
     @Override
@@ -130,21 +164,6 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
                 break;
         }
         return true;
-    }
-
-    private void initFromFileList() {
-        setListShown(true);
-        adapter.setData(fileList);
-        images = new ArrayList<>();
-        numberOfImage = new ArrayList<>();
-        for (ListItem item : fileList) {
-            if ((!item.isCollection()) && item.getContentType().contains(CONTENT_IMAGE)) {
-                numberOfImage.add(images.size());
-                images.add(item);
-            } else {
-                numberOfImage.add(0);
-            }
-        }
     }
 
     @Override
@@ -178,13 +197,42 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         if (item.isCollection()) {
             changeDir(item);
         } else {
-            if (item.getContentType().contains("image")) {
+            if (item.getContentType().contains(CONTENT_IMAGE)) {
                 startActivity(PreviewActivity.getIntentForStart(getContext(), images, credentials, numberOfImage.get(position)));
-//                replaceContent(PreviewFragment.newInstance(images, credentials, numberOfImage.get(position)));
             }
         }
     }
 
+    /**
+     * Restarts current loader
+     */
+    public void restartLoader() {
+        getLoaderManager().restartLoader(0, null, this);
+    }
+
+
+    /**
+     * Init need data from correct {@link #fileList}.
+     */
+    private void initFromFileList() {
+        setListShown(true);
+        adapter.setData(fileList);
+        images = new ArrayList<>();
+        numberOfImage = new ArrayList<>();
+        for (ListItem item : fileList) {
+            if ((!item.isCollection()) && item.getContentType().contains(CONTENT_IMAGE)) {
+                numberOfImage.add(images.size());
+                images.add(item);
+            } else {
+                numberOfImage.add(0);
+            }
+        }
+    }
+
+    /**
+     * Replace current fragment with another. Current fragment will be saved on stack.
+     * @param fragment new fragment
+     */
     private void replaceContent(final FileListFragment fragment) {
         getFragmentManager().beginTransaction()
                 .replace(R.id.file_list_fragment_container, fragment, fragment.currentDir)
@@ -192,11 +240,18 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
                 .commit();
     }
 
+    /**
+     * Replace current fragment with fragment that corresponds to given {@link ListItem}.
+     * @param item given {@link ListItem}
+     */
     private void changeDir(final ListItem item) {
         FileListFragment fragment = FileListFragment.newInstance(credentials, item.getFullPath(), item.getDisplayName());
         replaceContent(fragment);
     }
 
+    /**
+     * Set listener to floating action button of activity.
+     */
     private void setFABListener() {
         FloatingActionButton fab = ((FloatingActionButton) getActivity().findViewById(R.id.fab));
         if (fab != null) {
@@ -212,6 +267,9 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
 
     }
 
+    /**
+     * Adapter for list of files.
+     */
     public static class ListAdapter extends ArrayAdapter<ListItem> {
         private final LayoutInflater inflater;
 
@@ -220,6 +278,10 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
             inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
+        /**
+         * Set given list to this adapter.
+         * @param data given list
+         */
         public void setData(List<ListItem> data) {
             clear();
             if (data != null) {
@@ -258,7 +320,7 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
                 if (item.isCollection()) {
                     icon.setImageResource(R.drawable.ic_folder_black_48dp);
                 } else {
-                    if (item.getContentType().contains("image")) {
+                    if (item.getContentType().contains(CONTENT_IMAGE)) {
                         icon.setImageResource(R.drawable.ic_photo_black_48dp);
                     } else {
                         icon.setImageResource(R.drawable.ic_insert_drive_file_black_48dp);

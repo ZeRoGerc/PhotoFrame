@@ -20,14 +20,34 @@ import java.util.List;
 public class FilesLoader extends AsyncTaskLoader<List<ListItem>> {
     private static final String LOG_TAG = "FilesLoader";
 
+    /**
+     * Credentials for loading data from yandex disk.
+     */
     private final Credentials credentials;
+
+    /**
+     * Directory to load file list from.
+     */
     private final String dir;
+
     private final Handler handler;
 
+    /**
+     * Stores list of files from {@link #dir}.
+     */
     private List<ListItem> fileList;
 
+    /**
+     * Items retrieved per request.
+     */
     private static final int ITEMS_PER_REQUEST = 20;
 
+    /**
+     * Create new Instance of {@link FilesLoader}.
+     * @param context current context
+     * @param credentials credentials for loading data from yandex disk
+     * @param dir directory to load file list from
+     */
     public FilesLoader(Context context, Credentials credentials, String dir) {
         super(context);
         this.credentials = credentials;

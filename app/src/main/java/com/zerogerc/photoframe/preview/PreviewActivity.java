@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Window;
 
@@ -18,13 +19,31 @@ import com.zerogerc.photoframe.R;
 import java.util.ArrayList;
 
 public class PreviewActivity extends AppCompatActivity {
-    public static final String ITEM_KEY = "item";
-    public static final String CREDENTIALS_KEY = "credentials";
-    public static final String INITIAL_ITEM_KEY = "initial";
+    /*
+    Keys for passing objects through intent
+     */
+    private static final String ITEM_KEY = "item";
+    private static final String CREDENTIALS_KEY = "credentials";
+    private static final String INITIAL_ITEM_KEY = "initial";
 
+    /**
+     * Items for {@link ViewPager}.
+     */
     private ArrayList<ListItem> items;
+
+    /**
+     * {@link Credentials} for loading data from yandex disk.
+     */
     private Credentials credentials;
 
+    /**
+     * Return intent for passing to {@link #startActivity(Intent)} in order to invoke this Activity.
+     * @param context current context
+     * @param images images for {@link ViewPager}
+     * @param credentials credentials for loading files from yandex disk
+     * @param initialItem number of initial image
+     * @return proper intent
+     */
     public static Intent getIntentForStart(Context context, ArrayList<ListItem> images, Credentials credentials, int initialItem) {
         Intent intent = new Intent(context, PreviewActivity.class);
         intent.putExtra(ITEM_KEY, images);
@@ -39,7 +58,9 @@ public class PreviewActivity extends AppCompatActivity {
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.activity_preview);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         Intent intent = getIntent();
         int initial = 0;
@@ -74,8 +95,12 @@ public class PreviewActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Change title of current Action Bar.
+     * @param currentNumber
+     */
     private void changeTitle(int currentNumber) {
-        android.support.v7.app.ActionBar bar = getSupportActionBar();
+        ActionBar bar = getSupportActionBar();
         if (bar != null) {
             Resources resources = getResources();
             String title = String.format(resources.getString(R.string.pager_title), currentNumber + 1, items.size());
@@ -83,6 +108,9 @@ public class PreviewActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Adapter for {@link ViewPager}.
+     */
     private class ImageAdapter extends FragmentStatePagerAdapter {
 
         public ImageAdapter(FragmentManager fm) {

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import com.yandex.disk.client.Credentials;
 import com.yandex.disk.client.ListItem;
@@ -132,6 +133,7 @@ public class ThreadPoolImageLoader {
         handler.post(new Runnable() {
             @Override
             public void run() {
+                Log.e("REMAIN", Integer.toString(remainImages));
                 if (--remainImages == 0) {
                     sendFinishBroadcast();
                 }
@@ -163,6 +165,9 @@ public class ThreadPoolImageLoader {
      * Finish all task in pool.
      */
     public void shutdown() {
+        remainImages = 0;
+        sendFinishBroadcast();
         threadPool.shutdownNow();
+        threadPool = null;
     }
 }

@@ -15,21 +15,38 @@ import java.util.Calendar;
 
 /**
  * Activity for initial authorization of user and gaining access token.
+ * For retrieving result from {@link Intent} use {@link #ACCESS_TOKEN_KEY} and {@link #EXPIRE_TIME_KEY}.
  */
 public class LoginActivity extends Activity {
-    public static final String ACCESS_TOKEN_KEY = "access_token";
-    public static final String EXPIRE_TIME_KEY = "expire";
-
     private static String LOG_TAG = "LOG_FRAG";
 
+    /**
+     * Key that stores <code>OAuth</code> access token in resulting {@link Intent}.
+     */
+    public static final String ACCESS_TOKEN_KEY = "access_token";
+
+    /**
+     * Key that stores expire data of <code>OAuth</code> access token in resulting {@link Intent}.
+     */
+    public static final String EXPIRE_TIME_KEY = "expire";
+
+    /**
+     * <code>OAuth</code> request to server.
+     */
     private static final String AUTH_LINK = "https://oauth.yandex.ru/authorize?" +
             "response_type=token" +
             "&client_id=" + PhotoFrameApp.USER_ID;
 
+    /*
+    Key Strings in server response.
+     */
     private static final String ACCESS_TOKEN = "access_token=";
     private static final String EXPIRES_IN = "expires_in=";
     private static final String ERROR = "error=";
 
+    /**
+     * WebView of this Activity.
+     */
     private WebView webView;
 
     @Override
@@ -57,6 +74,12 @@ public class LoginActivity extends Activity {
         }
     }
 
+    /**
+     * Retrieves value of given key from given url.
+     * @param url given url
+     * @param match given key
+     * @return value of given key
+     */
     private String getString(final String url, final String match) {
         int left = url.indexOf(match);
         if (left == -1) {
@@ -72,6 +95,13 @@ public class LoginActivity extends Activity {
         }
     }
 
+    /**
+     * Finish {@link LoginActivity} with resulting {@link Intent}.
+     * @param accessToken retrieved access_token
+     * @param expiresIn retrieved exprires_in
+     * @see #ACCESS_TOKEN_KEY
+     * @see #EXPIRE_TIME_KEY
+     */
     private void finishWithResult(final String accessToken, final long expiresIn) {
         Intent result = new Intent();
         result.putExtra(ACCESS_TOKEN_KEY, accessToken);
@@ -82,6 +112,9 @@ public class LoginActivity extends Activity {
         finish();
     }
 
+    /**
+     * Finish Activity with Error.
+     */
     private void finishWithError() {
         setResult(RESULT_CANCELED);
         finish();

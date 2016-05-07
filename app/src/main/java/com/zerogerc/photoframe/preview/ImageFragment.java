@@ -23,16 +23,42 @@ import com.zerogerc.photoframe.util.ByteDownloader;
 
 import java.io.IOException;
 
+/**
+ * Fragment that shows one Image.
+ */
 public class ImageFragment extends Fragment implements LoaderCallbacks<ByteDownloader>{
-    public static final String ITEM_KEY = "item";
-    public static final String CREDENTIALS_KEY = "credentials";
+    /*
+    Keys for passing objects through intent
+     */
+    private static final String ITEM_KEY = "item";
+    private static final String CREDENTIALS_KEY = "credentials";
 
+    /**
+     * Item for retrieving image.
+     */
     private ListItem item;
+
+    /**
+     * {@link Credentials} for loading data from yandex disk.
+     */
     private Credentials credentials;
+
+    /**
+     * Image on the fragment.
+     */
     private ImageView image;
 
+    /**
+     * ProgressBar on the fragment.
+     */
     private ProgressBar progressBar;
 
+    /**
+     * Create new instance of the {@link ImageFragment}
+     * @param image item fro loading image
+     * @param credentials credentials for loading data from yandex disk
+     * @return instance if {@link ImageFragment}
+     */
     public static ImageFragment newInstance(ListItem image, Credentials credentials) {
 
         Bundle args = new Bundle();
@@ -85,39 +111,5 @@ public class ImageFragment extends Fragment implements LoaderCallbacks<ByteDownl
     @Override
     public void onLoaderReset(Loader<ByteDownloader> loader) {
         item = null;
-    }
-
-    private static class AsyncImageLoader extends AsyncTaskLoader<ByteDownloader> {
-        private ListItem item;
-        private Credentials credentials;
-
-        public AsyncImageLoader(Context context, ListItem item, Credentials credentials) {
-            super(context);
-            this.item = item;
-            this.credentials = credentials;
-        }
-
-
-        @Override
-        protected void onStartLoading() {
-            forceLoad();
-        }
-
-        @Override
-        public ByteDownloader loadInBackground() {
-            TransportClient client = null;
-            try {
-                final ByteDownloader downloader = new ByteDownloader();
-                client = TransportClient.getInstance(getContext(), credentials);
-                client.download(item.getFullPath(), downloader);
-                //return downloader with loaded data
-                return downloader;
-            } catch (IOException | WebdavException ex) {
-                ex.printStackTrace();
-            } finally {
-                TransportClient.shutdown(client);
-            }
-            return null;
-        }
     }
 }

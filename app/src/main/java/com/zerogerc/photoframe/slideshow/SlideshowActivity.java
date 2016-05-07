@@ -88,7 +88,6 @@ public class SlideshowActivity extends AppCompatActivity {
      */
     private int notFinishedImages;
 
-
     /**
      * {@link Credentials} for loading files from yandex disk.
      */
