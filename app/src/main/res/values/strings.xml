@@ -5,10 +5,9 @@
     <string name="action_feedback">Send feedback</string>
 
     <string name="no_files">No files</string>
+    <string name="no_internet">Cannot load data. Please check your network connection</string>
 
     <string name="pager_title">%1$d of %2$d</string>
-
-    <string name="initial_label">Checking login status...</string>
 
     <string name="send_feedback_label">Send feedback:</string>
 </resources>

@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -112,21 +111,18 @@ public class SlideshowActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
                 case ThreadPoolImageLoader.BROADCAST_IMAGE_LOADED:
+                    loadedImages.add(new Image(intent.getByteArrayExtra(ThreadPoolImageLoader.IMAGE_KEY)));
+                    progressBar.setVisibility(View.GONE);
                     //force first image to appear after it's loaded
                     if (!firstImageAppeared) {
                         firstImageAppeared = true;
                         currentCheckStep = checksNumber + 1;
                     }
-                    loadedImages.add(new Image(intent.getByteArrayExtra(ThreadPoolImageLoader.IMAGE_KEY)));
-                    progressBar.setVisibility(View.GONE);
                     break;
                 case ThreadPoolImageLoader.BROADCAST_LOAD_FINISHED:
-                    Log.e(TAG, "Finish");
-                    Log.e(TAG, Integer.toString(itemsForLoad.size()) + " " + Boolean.toString(hasFinishedLoad));
                     if (itemsForLoad.size() == 0) {
                         hasFinishedLoad = true;
                     }
-                    finishWithDelayIfEmptyAndFinished();
                     break;
             }
         }
@@ -160,7 +156,6 @@ public class SlideshowActivity extends AppCompatActivity {
         notFinishedImages = 0;
 
         ThreadPoolImageLoader.getInstance().initExecutor(credentials);
-        loadBunch();
     }
 
     /**
@@ -271,7 +266,6 @@ public class SlideshowActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         checkIfExistsAndPost();
-                        finishWithDelayIfEmptyAndFinished();
                     }
                 });
 
@@ -286,6 +280,10 @@ public class SlideshowActivity extends AppCompatActivity {
     private void checkIfExistsAndPost() {
         if (++currentCheckStep < checksNumber) return;
         currentCheckStep = 0;
+
+        if (loadedImages.size() == 0 && hasFinishedLoad) {
+            finishWithDelayIfEmptyAndFinished();
+        }
 
         int amount = 0;
         SlideshowImageFragment fragment = null;

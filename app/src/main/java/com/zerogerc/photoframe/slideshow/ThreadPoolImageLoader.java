@@ -46,7 +46,6 @@ public class ThreadPoolImageLoader {
 
     private Handler handler;
 
-    //TODO: use phaser
     /**
      * Amount of not loaded images.
      */
@@ -165,9 +164,7 @@ public class ThreadPoolImageLoader {
      * Finish all task in pool.
      */
     public void shutdown() {
-        remainImages = 0;
         sendFinishBroadcast();
         threadPool.shutdownNow();
-        threadPool = null;
     }
 }

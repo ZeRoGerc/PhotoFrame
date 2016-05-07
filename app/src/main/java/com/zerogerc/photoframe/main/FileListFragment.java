@@ -2,10 +2,13 @@ package com.zerogerc.photoframe.main;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -84,6 +87,13 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     private ArrayList<Integer> numberOfImage;
 
     /**
+     * {@link SwipeRefreshLayout} layout of list.
+     */
+    private ListFragmentSwipeRefreshLayout mSwipeRefreshLayout;
+
+    private Handler handler;
+
+    /**
      * Create nes Instance of {@link FileListFragment}.
      * @param credentials credentials for loading data from yandex disk
      * @param currentDir directory of displaying list of files
@@ -103,8 +113,43 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Create the list fragment's content view by calling the super method
+        final View listFragmentView = super.onCreateView(inflater, container, savedInstanceState);
+
+        // Now create a SwipeRefreshLayout to wrap the fragment's content view
+        mSwipeRefreshLayout = new ListFragmentSwipeRefreshLayout(container.getContext());
+
+        // Add the list fragment's content view to the SwipeRefreshLayout, making sure that it fills
+        // the SwipeRefreshLayout
+        mSwipeRefreshLayout.addView(listFragmentView,
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+        // Make sure that the SwipeRefreshLayout will fill the fragment
+        mSwipeRefreshLayout.setLayoutParams(
+                new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT));
+
+        // Now return the SwipeRefreshLayout as this fragment's content view
+
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                fileList = new ArrayList<>();
+                images = new ArrayList<>();
+                numberOfImage = new ArrayList<>();
+                restartLoader();
+            }
+        });
+        return mSwipeRefreshLayout;
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        handler = new Handler();
 
         setHasOptionsMenu(true);
 
@@ -170,8 +215,17 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     public void onLoadFinished(Loader<List<ListItem>> loader, List<ListItem> data) {
         setListShown(true);
 
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+        }, 1000);
+
         if (data.isEmpty()) {
-            //TODO: show message on the empty screen
+            if (((FilesLoader) loader).getException() != null) {
+                setEmptyText(getString(R.string.no_internet));
+            }
         } else {
             fileList = new ArrayList<>(data);
             initFromFileList();
@@ -203,10 +257,20 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         }
     }
 
+    @Override
+    public void onStop() {
+        mSwipeRefreshLayout.setRefreshing(false);
+        setListShown(false);
+        super.onStop();
+    }
+
     /**
      * Restarts current loader
      */
     public void restartLoader() {
+        fileList = new ArrayList<>();
+        images = new ArrayList<>();
+        numberOfImage = new ArrayList<>();
         getLoaderManager().restartLoader(0, null, this);
     }
 
@@ -215,8 +279,8 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
      * Init need data from correct {@link #fileList}.
      */
     private void initFromFileList() {
-        setListShown(true);
         adapter.setData(fileList);
+        setListShown(true);
         images = new ArrayList<>();
         numberOfImage = new ArrayList<>();
         for (ListItem item : fileList) {
@@ -264,7 +328,15 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
                 }
             });
         }
+    }
 
+    /**
+     * Utility method to check whether a {@link ListView} can scroll up from it's current position.
+     * Handles platform version differences, providing backwards compatible functionality where
+     * needed.
+     */
+    private static boolean canListViewScrollUp(ListView listView) {
+        return ViewCompat.canScrollVertically(listView, -1);
     }
 
     /**
@@ -328,6 +400,43 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
                 }
             }
         }
+    }
+
+    /**
+     * Sub-class of {@link android.support.v4.widget.SwipeRefreshLayout} for use in this
+     * {@link android.support.v4.app.ListFragment}. The reason that this is needed is because
+     * {@link android.support.v4.widget.SwipeRefreshLayout} only supports a single child, which it
+     * expects to be the one which triggers refreshes. In our case the layout's child is the content
+     * view returned from
+     * {@link android.support.v4.app.ListFragment#onCreateView(android.view.LayoutInflater, android.view.ViewGroup, android.os.Bundle)}
+     * which is a {@link android.view.ViewGroup}.
+     *
+     * <p>To enable 'swipe-to-refresh' support via the {@link android.widget.ListView} we need to
+     * override the default behavior and properly signal when a gesture is possible. This is done by
+     * overriding {@link #canChildScrollUp()}.
+     */
+    private class ListFragmentSwipeRefreshLayout extends SwipeRefreshLayout {
+
+        public ListFragmentSwipeRefreshLayout(Context context) {
+            super(context);
+        }
+
+        /**
+         * As mentioned above, we need to override this method to properly signal when a
+         * 'swipe-to-refresh' is possible.
+         *
+         * @return true if the {@link android.widget.ListView} is visible and can scroll up.
+         */
+        @Override
+        public boolean canChildScrollUp() {
+            final ListView listView = getListView();
+            if (listView.getVisibility() == View.VISIBLE) {
+                return canListViewScrollUp(listView);
+            } else {
+                return false;
+            }
+        }
+
     }
 }
 

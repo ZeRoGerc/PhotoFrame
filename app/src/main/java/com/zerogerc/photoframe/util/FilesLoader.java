@@ -43,6 +43,11 @@ public class FilesLoader extends AsyncTaskLoader<List<ListItem>> {
     private static final int ITEMS_PER_REQUEST = 20;
 
     /**
+     * Exception during loading
+     */
+    private Exception exception;
+
+    /**
      * Create new Instance of {@link FilesLoader}.
      * @param context current context
      * @param credentials credentials for loading data from yandex disk
@@ -94,6 +99,7 @@ public class FilesLoader extends AsyncTaskLoader<List<ListItem>> {
                 }
             });
         } catch (WebdavException | IOException e) {
+            exception = e;
             return fileList;
         } finally {
             if (client != null) {
@@ -102,4 +108,13 @@ public class FilesLoader extends AsyncTaskLoader<List<ListItem>> {
         }
         return fileList;
     }
+
+    /**
+     * Return exception that occurs during loading.
+     * @return load exception if it occurs during loading
+     */
+    public Exception getException() {
+        return exception;
+    }
+
 }

@@ -5,8 +5,10 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 
 import com.zerogerc.photoframe.R;
 import com.zerogerc.photoframe.main.PhotoFrameApp;
@@ -49,12 +51,18 @@ public class LoginActivity extends Activity {
      */
     private WebView webView;
 
+    /**
+     * ProgressBar of this Activty.
+     */
+    private ProgressBar progressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.content_login_fragment);
 
         WebView webView = ((WebView) findViewById(R.id.login_fragment_web_view));
+        progressBar = ((ProgressBar) findViewById(R.id.login_fragment_progress));
 
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new LoginClient());
@@ -139,6 +147,12 @@ public class LoginActivity extends Activity {
             } else {
                 super.onPageStarted(view, url, favicon);
             }
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            progressBar.setVisibility(View.GONE);
+            super.onPageFinished(view, url);
         }
     }
 }
