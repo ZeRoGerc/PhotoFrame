@@ -1,15 +1,13 @@
 package com.zerogerc.photoframe.util;
 
-import android.support.v4.content.AsyncTaskLoader;
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
+import android.support.v4.content.AsyncTaskLoader;
 
 import com.yandex.disk.client.Credentials;
 import com.yandex.disk.client.ListItem;
 import com.yandex.disk.client.ListParsingHandler;
 import com.yandex.disk.client.TransportClient;
-import com.yandex.disk.client.exceptions.CancelledPropfindException;
 import com.yandex.disk.client.exceptions.WebdavException;
 
 import java.io.IOException;
@@ -75,13 +73,12 @@ public class FilesLoader extends AsyncTaskLoader<List<ListItem>> {
                     }
                 }
             });
-        } catch (CancelledPropfindException canceledException) {
-            return fileList;
         } catch (WebdavException | IOException e) {
-            Log.e(LOG_TAG, "Load Exception");
-            //TODO: proper handler
+            return fileList;
         } finally {
-            TransportClient.shutdown(client);
+            if (client != null) {
+                TransportClient.shutdown(client);
+            }
         }
         return fileList;
     }

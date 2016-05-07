@@ -3,7 +3,6 @@ package com.zerogerc.photoframe.main;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -39,6 +38,8 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     private static final String CURRENT_DIR_KEY = "directory";
     private static final String CURRENT_TITLE_KEY = "title";
 
+    private static final String FILES_KEY = "files";
+
     public static final String ROOT = "/";
 
     private static final String CONTENT_IMAGE = "image";
@@ -47,6 +48,7 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
     private String currentDir;
 
     private ListAdapter adapter;
+    private ArrayList<ListItem> fileList;
     private ArrayList<ListItem> images;
     private ArrayList<Integer> numberOfImage;
 
@@ -91,7 +93,15 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         adapter = new ListAdapter(getActivity());
         setListAdapter(adapter);
         setListShown(false);
-        getLoaderManager().initLoader(0, null, this);
+        if (savedInstanceState == null) {
+            getLoaderManager().initLoader(0, null, this);
+        } else {
+            fileList = savedInstanceState.getParcelableArrayList(FILES_KEY);
+            initFromFileList();
+            if (fileList == null) {
+                getLoaderManager().initLoader(0, null, this);
+            }
+        }
 
         setFABListener();
     }
@@ -122,27 +132,38 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         return true;
     }
 
+    private void initFromFileList() {
+        setListShown(true);
+        adapter.setData(fileList);
+        images = new ArrayList<>();
+        numberOfImage = new ArrayList<>();
+        for (ListItem item : fileList) {
+            if ((!item.isCollection()) && item.getContentType().contains(CONTENT_IMAGE)) {
+                numberOfImage.add(images.size());
+                images.add(item);
+            } else {
+                numberOfImage.add(0);
+            }
+        }
+    }
+
     @Override
     public void onLoadFinished(Loader<List<ListItem>> loader, List<ListItem> data) {
-        if (isResumed()) {
-            setListShown(true);
-        } else {
-            setListShownNoAnimation(true);
-        }
+        setListShown(true);
+
         if (data.isEmpty()) {
             //TODO: show message on the empty screen
         } else {
-            adapter.setData(data);
-            images = new ArrayList<>();
-            numberOfImage = new ArrayList<>();
-            for (ListItem item : data) {
-                if ((!item.isCollection()) && item.getContentType().contains(CONTENT_IMAGE)) {
-                    numberOfImage.add(images.size());
-                    images.add(item);
-                } else {
-                    numberOfImage.add(0);
-                }
-            }
+            fileList = new ArrayList<>(data);
+            initFromFileList();
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (fileList != null) {
+            outState.putParcelableArrayList(FILES_KEY, fileList);
         }
     }
 
@@ -164,9 +185,9 @@ public class FileListFragment extends ListFragment implements LoaderManager.Load
         }
     }
 
-    private void replaceContent(final Fragment fragment) {
+    private void replaceContent(final FileListFragment fragment) {
         getFragmentManager().beginTransaction()
-                .replace(R.id.file_list_fragment_container, fragment, FileListActivity.FRAGMENT_TAG)
+                .replace(R.id.file_list_fragment_container, fragment, fragment.currentDir)
                 .addToBackStack(null)
                 .commit();
     }

@@ -19,8 +19,6 @@ public class FileListActivity extends AppCompatActivity {
 
     private static final int LOGIN_CODE = 1;
 
-    public static final String FRAGMENT_TAG = "list_fragment";
-
     private Credentials credentials;
 
 //    private FileListFragment fileListFragment;
@@ -42,7 +40,10 @@ public class FileListActivity extends AppCompatActivity {
             startActivityForResult(intent, LOGIN_CODE);
         } else {
             credentials = new Credentials(PhotoFrameApp.USER_ID, prefs.getString(PhotoFrameApp.SHARED_PREF_TOKEN, null));
-            startLoading();
+
+            if (savedInstanceState == null) {
+                startLoading();
+            }
         }
     }
 
@@ -51,7 +52,7 @@ public class FileListActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(
                         R.id.file_list_fragment_container,
-                        FileListFragment.newInstance(credentials, FileListFragment.ROOT, getResources().getString(R.string.disk)), FRAGMENT_TAG)
+                        FileListFragment.newInstance(credentials, FileListFragment.ROOT, getResources().getString(R.string.disk)), FileListFragment.ROOT)
                 .commitAllowingStateLoss();
     }
 
